@@ -11,34 +11,11 @@
 // jshint node: true
 'use strict';
 
+const parse5 = require('parse5');
 const dom5 = require('dom5');
 const {Transform} = require('stream');
 
 const p = dom5.predicates;
-
-function isBlankTextNode(node) {
-  return node && dom5.isTextNode(node) && !/\S/.test(dom5.getTextContent(node));
-}
-
-function replaceWithChildren(node) {
-  if (!node) {
-    return;
-  }
-  let parent = node.parentNode;
-  let idx = parent.childNodes.indexOf(node);
-  let children = node.childNodes;
-  children.forEach(function(n) {
-    n.parentNode = parent;
-  });
-  let til = idx + 1;
-  let next = parent.childNodes[til];
-  // remove newline text node as well
-  while (isBlankTextNode(next)) {
-    til++;
-    next = parent.childNodes[til];
-  }
-  parent.childNodes = parent.childNodes.slice(0, idx).concat(children, parent.childNodes.slice(til));
-}
 
 function onlyOneLicense(doc) {
   let comments = dom5.nodeWalkAll(doc, dom5.isCommentNode);
@@ -59,19 +36,7 @@ class MinimalDocTransform extends Transform {
     super({objectMode: true});
   }
   _transform(file, enc, cb) {
-    let doc = dom5.parse(String(file.contents));
-    let head = dom5.query(doc, p.hasTagName('head'));
-    let body = dom5.query(doc, p.hasTagName('body'));
-    let vulc = dom5.query(body, p.AND(p.hasTagName('div'), p.hasAttr('by-polymer-bundler'), p.hasAttr('hidden')));
-    let charset = dom5.query(doc, p.AND(p.hasTagName('meta'), p.hasAttrValue('charset', 'UTF-8')));
-
-    if (charset) {
-      dom5.remove(charset);
-    }
-
-    replaceWithChildren(head);
-    replaceWithChildren(vulc);
-    replaceWithChildren(body);
+    let doc = parse5.parse(String(file.contents));
 
     let scripts = dom5.queryAll(doc, p.hasTagName('script'));
     let collector = scripts[0];
@@ -83,12 +48,14 @@ class MinimalDocTransform extends Transform {
     }
     dom5.setTextContent(collector, contents.join(''));
 
-    let html = dom5.query(doc, p.hasTagName('html'));
-    replaceWithChildren(html);
-
+    let vulc = dom5.query(doc, p.AND(p.hasTagName('div'), p.hasAttr('by-polymer-bundler'), p.hasAttr('hidden')));
+    if (vulc) {
+      dom5.removeNodeSaveChildren(vulc);
+    }
+    dom5.removeFakeRootElements(doc);
     onlyOneLicense(doc);
 
-    file.contents = new Buffer(dom5.serialize(doc));
+    file.contents = new Buffer(parse5.serialize(doc));
 
     cb(null, file);
   }
