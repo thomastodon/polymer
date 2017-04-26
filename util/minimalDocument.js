@@ -31,10 +31,23 @@ function onlyOneLicense(doc) {
   }
 }
 
+function removeWhitespace(doc) {
+  dom5.normalize(doc);
+  let textNodes = dom5.nodeWalkAll(doc, dom5.isTextNode);
+  for (let i = 0; i < textNodes.length; i++) {
+    let node = textNodes[i];
+    let content = dom5.getTextContent(node);
+    if (!/[^\s]/.test(content)) {
+      dom5.remove(node);
+    }
+  }
+}
+
 class MinimalDocTransform extends Transform {
   constructor() {
     super({objectMode: true});
   }
+
   _transform(file, enc, cb) {
     let doc = parse5.parse(String(file.contents));
 
@@ -52,8 +65,12 @@ class MinimalDocTransform extends Transform {
     if (vulc) {
       dom5.removeNodeSaveChildren(vulc);
     }
+
     dom5.removeFakeRootElements(doc);
+
     onlyOneLicense(doc);
+
+    removeWhitespace(doc);
 
     file.contents = new Buffer(parse5.serialize(doc));
 
