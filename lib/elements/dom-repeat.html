@@ -380,6 +380,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.__filterFn = filter && (typeof filter == 'function' ? filter :
         function() { return methodHost[filter].apply(methodHost, arguments); });
       if (this.items) {
+        this.__initializeChunking();
         this.__debounceRender(this.__render);
       }
     }
