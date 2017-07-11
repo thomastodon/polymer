@@ -3845,7 +3845,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       // TODO(kschaaf): We're experiencing more flakiness on Safari on CI,
       // for now, skip these tests and revisit
-      suite.skip('chunked rendering', function() {
+      suite.only('chunked rendering', function() {
 
         test('basic chunked rendering', function(done) {
 
@@ -3856,9 +3856,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           };
 
           var lastLength = 0;
+          var numberOfChunks = 0;
           var checkCount = function() {
             var stamped = chunked.root.querySelectorAll('*:not(template):not(dom-repeat)');
             checkItemOrder(stamped);
+            numberOfChunks += 1;
+
             if (stamped.length && lastLength === 0) {
               // Initial rendering of initial count
               assert.equal(stamped.length, 10);
@@ -3872,6 +3875,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             } else {
               // Final rendering at exact item count
               assert.equal(stamped.length, 100);
+              assert.isTrue(numberOfChunks > 2);
               done();
             }
           };
@@ -3964,7 +3968,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         });
 
-
         test('mutations during chunked rendering, sort & filtered', function(done) {
 
           var checkItemOrder = function(stamped) {
@@ -3989,10 +3992,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           var lastLength = 0;
           var mutateCount = 5;
+          var numberOfChunks = 0;
           var checkCount = function() {
             var stamped = chunked.root.querySelectorAll('*:not(template):not(dom-repeat)');
             checkItemOrder(stamped);
             var filteredLength = chunked.items.filter(chunked.$.repeater.filter).length;
+
+            console.log(stamped.length);
+            numberOfChunks += 1;
+
             if (stamped.length && lastLength === 0) {
               // Initial rendering of initial count
               assert.equal(stamped.length, 10);
@@ -4010,6 +4018,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               checkUntilComplete();
             } else {
               assert.equal(stamped.length, filteredLength);
+              assert.isTrue(numberOfChunks > 2);
               done();
             }
           };
@@ -4032,7 +4041,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           };
           chunked.items = chunked.preppedItems.slice();
           checkUntilComplete();
-
         });
 
       });

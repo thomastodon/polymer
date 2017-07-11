@@ -371,6 +371,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.__sortFn = sort && (typeof sort == 'function' ? sort :
         function() { return methodHost[sort].apply(methodHost, arguments); });
       if (this.items) {
+//        this.__initializeChunking();
         this.__debounceRender(this.__render);
       }
     }
@@ -380,6 +381,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.__filterFn = filter && (typeof filter == 'function' ? filter :
         function() { return methodHost[filter].apply(methodHost, arguments); });
       if (this.items) {
+//        this.__initializeChunking();
         this.__debounceRender(this.__render);
       }
     }
@@ -390,6 +392,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     __initializeChunking() {
       if (this.initialCount) {
+        console.log('__initializeChunking');
         this.__limit = this.initialCount;
         this.__chunkCount = this.initialCount;
         this.__lastChunkTime = performance.now();
@@ -478,6 +481,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     __render() {
+      console.log('__render');
       if (!this.__ensureTemplatized()) {
         // No template found yet
         return;
