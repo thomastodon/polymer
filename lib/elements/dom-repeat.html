@@ -436,7 +436,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if (!this.__handleItemPath(change.path, change.value)) {
         // Otherwise, the array was reset ('items') or spliced ('items.splices'),
         // so queue a full refresh
-        this.__needFullRefresh = true;
         this.__initializeChunking();
         this.__debounceRender(this.__render);
       }
